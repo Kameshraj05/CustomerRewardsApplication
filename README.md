@@ -106,14 +106,15 @@ This API endpoint is responsible for recording customer purchase details, specif
 | amount            | Double          | 1..1       | This value defines the amount spent by the customer on the purchase.        |
 | transactionDate   | LocalDateTime   | 1..1       | This parameter denotes the date on which the customer made the purchase.    |
 ### Request Sample Data
-'{ 
+```
+{ 
 "customerId": "CUST001", 
 "customerName: "Alice Smith", 
 "transactionId": "TXN001", 
 "amount": 125.50,
 "transactionDate": "2025-04-01T10:00:00"
  }
-'
+```
 ### Response Data
 In the response of this API, the client will receive the HTTP status code along with its respective message in the response body as given below.
 | Status Code | Status Description    | Message                                                                     |
