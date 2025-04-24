@@ -44,6 +44,8 @@ This is a Spring Boot-based REST API application designed to manage customer tra
 
 - Any IDE (e.g., IntelliJ, Eclipse)
 
+- MongoDB
+
 
  ### Steps
 
@@ -68,8 +70,8 @@ The application follows a layered architecture, with the following components:
 ### Entities
 **transaction:**
 - id (Primary Key)
--	customer_id
 -	transaction_id
+-	customer_id
 -	amount
 -	transaction_date
 
@@ -82,8 +84,8 @@ The application follows a layered architecture, with the following components:
 | Table       | Column          | Data Type             | Constraints             | Description                                                              |
 | :---------- | :-------------- | :-------------------- | :---------------------- | :----------------------------------------------------------------------- |
 | transaction | id              | VARCHAR(255)          | PRIMARY KEY             | Unique identifier for the transaction.                                   |
-|             | customer_id     | VARCHAR(255)          | NOT NULL                | ID of the customer who made the transaction.                             |
 |             | transaction_id  | VARCHAR(255)          | NOT NULL                | ID of the transaction used for customer reference                        |
+|             | customer_id     | VARCHAR(255)          | NOT NULL                | ID of the customer who made the transaction.                             |
 |             | amount          | DECIMAL(10, 2)        | NOT NULL                | Amount of the purchase.                                                  |
 |             | transaction_date| TIMESTAMP             | NOT NULL                | Date and time of the transaction.                                        |
 | customer    | id              | VARCHAR(255)          | PRIMARY KEY             | Unique identifier for the customer.                                      |
@@ -140,7 +142,7 @@ This API allows for retrieving customer transaction history and calculating rewa
 ### Response Parameters
 | Parameter Name    | Data Type       | Occurrence | Description                                                                 |
 | :---------------- | :-------------- | :--------- | :-------------------------------------------------------------------------- |
-| customerId        | String          | 1..1       | Customer Id is the key for customer identification.                         |
+| id                | String          | 1..1       | Customer Id is the key for customer identification.                         |
 | customerName      | String          | 1..1       | Name of the customer.                                                       |
 | transaction       | List            | 1..1       | List of transactions done by the customer within the given date range.      |
 | monthlyPoints     | List            | 1..1       | The rewards points calculated and structured monthly wise.                  |
@@ -148,47 +150,35 @@ This API allows for retrieving customer transaction history and calculating rewa
 ### Response Sample Data
 ```
 {
-"customerId":"CUST001",
+"id":"CUST001",
 "customerName":"Alice Smith",
 "transaction":[
 {
-"customerId":"CUST001",
-"transactionId":"TXN1002", 
-"amount":75.5,
-"transactionDate":"2025-02-15"
-},
-{
-"customerId":"CUST001",
 "transactionId":"TXN1003",
+"customerId":"CUST001",
 "amount":120.0,
 "transactionDate":"2025-03-01"
 },
 {
-"customerId":"CUST001",
 "transactionId":"TXN1016",
+"customerId":"CUST001",
 "amount":105.5,
 "transactionDate":"2025-02-27"
-},
-{
-"customerId":"CUST001",
-"transactionId":"TXN1019",
-"amount":149.0,
-"transactionDate":"2025-03-12"
 }
 ],
 "monthlyPoints":[
 {
 "year":2025,
-"month":"FEBRUARY",
-"points":86
+"month":"MARCH",
+"points":90
 },
 {
 "year":2025,
-"month":"MARCH",
-"points":238
+"month":"FEBRUARY",
+"points":61
 }
 ],
-"totalPoints":324
+"totalPoints":151
 }
 ```
 | Status Code | Status Description    | Message                                                                                                 |
