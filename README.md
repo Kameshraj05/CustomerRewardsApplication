@@ -106,14 +106,15 @@ This API endpoint is responsible for recording customer purchase details, specif
 | amount            | Double          | 1..1       | This value defines the amount spent by the customer on the purchase.        |
 | transactionDate   | LocalDateTime   | 1..1       | This parameter denotes the date on which the customer made the purchase.    |
 ### Request Sample Data
-'{ 
+```
+{ 
 "customerId": "CUST001", 
 "customerName: "Alice Smith", 
 "transactionId": "TXN001", 
 "amount": 125.50,
 "transactionDate": "2025-04-01T10:00:00"
  }
-'
+```
 ### Response Data
 In the response of this API, the client will receive the HTTP status code along with its respective message in the response body as given below.
 | Status Code | Status Description    | Message                                                                     |
@@ -135,7 +136,7 @@ This API allows for retrieving customer transaction history and calculating rewa
 | fromDate          | LocalDate       | 0..1       | The user input to provide the start date to fetch customer transactions.    |
 | toDate            | LocalDate       | 0..1       | The user input to provide the end date to fetch customer transactions.      |
 ### Request Sample Data
-'Sample url: /customers/CUST001?fromDate=2025-02-01&toDate=2025-04-30'
+```Sample url: /customers/CUST001?fromDate=2025-02-01&toDate=2025-04-30```
 ### Response Parameters
 | Parameter Name    | Data Type       | Occurrence | Description                                                                 |
 | :---------------- | :-------------- | :--------- | :-------------------------------------------------------------------------- |
@@ -145,7 +146,8 @@ This API allows for retrieving customer transaction history and calculating rewa
 | monthlyPoints     | List            | 1..1       | The rewards points calculated and structured monthly wise.                  |
 | totalPoints       | int             | 1..1       | Total reward points earned by the customer from the transactions within the given date range.      |
 ### Response Sample Data
-'{
+```
+{
 "customerId":"CUST001",
 "customerName":"Alice Smith",
 "transaction":[
@@ -188,7 +190,7 @@ This API allows for retrieving customer transaction history and calculating rewa
 ],
 "totalPoints":324
 }
-'
+```
 | Status Code | Status Description    | Message                                                                                                 |
 | :---------- | :-------------------- | :------------------------------------------------------------------------------------------------------ |
 | 200         | OK                    | The request was successful.                                                                             |
