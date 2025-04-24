@@ -86,7 +86,7 @@ public class RewardsService {
 
         // Construct DTO
         CustomerDetailsDTO dto = new CustomerDetailsDTO();
-        dto.setCustomerId(customer.getCustomerId());
+        dto.setId(customer.getCustomerId());
         dto.setCustomerName(customer.getCustomerName());
 
         List<TransactionDTO> transactionDTOs = transactions.stream().map(txn -> {

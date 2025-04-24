@@ -56,7 +56,7 @@ public class RewardsControllerTest {
         LocalDate toDate = LocalDate.parse("2025-03-31");
 
         CustomerDetailsDTO expectedDto = new CustomerDetailsDTO();
-        expectedDto.setCustomerId(customerId);
+        expectedDto.setId(customerId);
         when(rewardsService.calculateRewardPoints(customerId, fromDate, toDate)).thenReturn(expectedDto);
 
         ResponseEntity<?> response = rewardsController.getCustomerReward(customerId, fromDate, toDate);

@@ -20,15 +20,14 @@ public class Transaction {
 
     @Id
     private String id;
-
-    @NotNull
-    @Field("customer_id")
-    private String customerId;
     
     @NotNull
     @Field("transaction_id")
     private String transactionId;
     
+    @NotNull
+    @Field("customer_id")
+    private String customerId;
 
     @NotNull
     @Positive

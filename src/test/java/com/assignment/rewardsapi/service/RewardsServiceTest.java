@@ -110,7 +110,7 @@ public class RewardsServiceTest {
         CustomerDetailsDTO result = rewardsService.calculateRewardPoints(customerId, fromDate, toDate);
 
         // Then
-        assertEquals(customerId, result.getCustomerId());
+        assertEquals(customerId, result.getId());
         assertEquals("Alice Smith", result.getCustomerName());
         assertEquals(2, result.getTransaction().size());
         assertEquals(90 + 25, result.getTotalPoints());

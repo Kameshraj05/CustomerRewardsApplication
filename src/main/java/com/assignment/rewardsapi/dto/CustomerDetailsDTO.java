@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerDetailsDTO {
-    private String customerId;
+    private String id;
     private String customerName;
     private List<TransactionDTO> transaction;
     private List<MonthlyPointsDTO> monthlyPoints;
