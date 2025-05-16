@@ -3,7 +3,6 @@ package com.assignment.rewardsapi.service;
 import com.assignment.rewardsapi.dto.CustomerDetailsDTO;
 import com.assignment.rewardsapi.dto.CustomerTransactionDTO;
 import com.assignment.rewardsapi.dto.MonthlyPointsDTO;
-import com.assignment.rewardsapi.dto.TransactionDTO;
 import com.assignment.rewardsapi.exception.CustomerNotFoundException;
 import com.assignment.rewardsapi.model.Customer;
 import com.assignment.rewardsapi.model.Transaction;
@@ -19,14 +18,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class RewardsServiceTest {
@@ -40,14 +36,14 @@ public class RewardsServiceTest {
     @InjectMocks
     private RewardsService rewardsService;
 
-    @BeforeEach
+    @SuppressWarnings("deprecation")
+	@BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
     public void testSaveCustomerAndTransaction() {
-        //Given
         CustomerTransactionDTO dto = new CustomerTransactionDTO();
         dto.setCustomerId("CUST123");
         dto.setCustomerName("Test Customer");
@@ -68,16 +64,11 @@ public class RewardsServiceTest {
         when(customerRepository.save(any(Customer.class))).thenReturn(savedCustomer);
         when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
 
-        //When
         rewardsService.saveCustomerAndTransaction(dto);
-
-        //Then
-        //No exception is thrown, which implies the method executed successfully.
     }
 
     @Test
     public void testCalculateRewardPoints_ExistingCustomerWithTransactions() {
-        // Given
         String customerId = "CUST001";
         LocalDate fromDate = LocalDate.parse("2025-01-01");
         LocalDate toDate = LocalDate.parse("2025-03-31");
@@ -106,25 +97,18 @@ public class RewardsServiceTest {
         when(transactionRepository.findByCustomerIdAndTransactionDateBetween(customerId, fromDate.atStartOfDay(), toDate.atStartOfDay()))
                 .thenReturn(transactions);
 
-        // When
         CustomerDetailsDTO result = rewardsService.calculateRewardPoints(customerId, fromDate, toDate);
 
-        // Then
         assertEquals(customerId, result.getId());
         assertEquals("Alice Smith", result.getCustomerName());
         assertEquals(2, result.getTransaction().size());
         assertEquals(90 + 25, result.getTotalPoints());
 
-        // Verify monthly points.
         List<MonthlyPointsDTO> monthlyPoints = result.getMonthlyPoints();
-        assertEquals(2, monthlyPoints.size()); // Check that we have 2 months.
-
-        //Check the first month
+        assertEquals(2, monthlyPoints.size());
         assertEquals(2025, monthlyPoints.get(0).getYear());
         assertEquals("JANUARY", monthlyPoints.get(0).getMonth());
         assertEquals(90, monthlyPoints.get(0).getPoints());
-
-        //Check the second month
         assertEquals(2025, monthlyPoints.get(1).getYear());
         assertEquals("FEBRUARY", monthlyPoints.get(1).getMonth());
         assertEquals(25, monthlyPoints.get(1).getPoints());
@@ -132,52 +116,124 @@ public class RewardsServiceTest {
 
     @Test
     public void testCalculateRewardPoints_CustomerNotFound() {
-        // Given
         String customerId = "CUST123";
         LocalDate fromDate = LocalDate.parse("2025-01-01");
         LocalDate toDate = LocalDate.parse("2025-03-31");
 
         when(customerRepository.findByCustomerId(customerId)).thenReturn(null);
 
-        // When
         Exception exception = assertThrows(CustomerNotFoundException.class, () -> {
             rewardsService.calculateRewardPoints(customerId, fromDate, toDate);
         });
 
-        // Then
         assertEquals("No transactions found for the given inputs.", exception.getMessage());
     }
 
     @Test
     public void testCalculateRewardPoints_InvalidCustomerIdFormat() {
-        // Given
         String invalidCustomerId = "123";
         LocalDate fromDate = LocalDate.parse("2025-01-01");
         LocalDate toDate = LocalDate.parse("2025-03-31");
 
-        // When
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             rewardsService.calculateRewardPoints(invalidCustomerId, fromDate, toDate);
         });
 
-        // Then
         assertEquals("Invalid Customer ID.", exception.getMessage());
     }
 
     @Test
     public void testCalculateRewardPoints_InvalidDateRange() {
-        // Given
         String customerId = "CUST001";
         LocalDate fromDate = LocalDate.parse("2025-03-31");
         LocalDate toDate = LocalDate.parse("2025-01-01");
 
-        // When
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             rewardsService.calculateRewardPoints(customerId, fromDate, toDate);
         });
 
-        // Then
         assertEquals("Invalid date range. From-date cannot be after to-date.", exception.getMessage());
     }
-}
 
+    // -------------------- Circuit Breaker Tests --------------------
+
+    @Test
+    public void testCalculateRewardPoints_CustomerRepositoryThrowsException() {
+        String customerId = "CUST001";
+        LocalDate fromDate = LocalDate.of(2025, 1, 1);
+        LocalDate toDate = LocalDate.of(2025, 3, 31);
+
+        when(customerRepository.findByCustomerId(customerId)).thenThrow(new RuntimeException("Database unavailable"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            rewardsService.calculateRewardPoints(customerId, fromDate, toDate);
+        });
+
+        assertEquals("Database unavailable", exception.getMessage());
+    }
+
+    @Test
+    public void testCalculateRewardPoints_TransactionRepositoryThrowsException() {
+        String customerId = "CUST001";
+        LocalDate fromDate = LocalDate.of(2025, 1, 1);
+        LocalDate toDate = LocalDate.of(2025, 3, 31);
+
+        Customer customer = new Customer();
+        customer.setCustomerId(customerId);
+        customer.setCustomerName("Test");
+
+        when(customerRepository.findByCustomerId(customerId)).thenReturn(customer);
+        when(transactionRepository.findByCustomerIdAndTransactionDateBetween(
+                eq(customerId),
+                eq(fromDate.atStartOfDay()),
+                eq(toDate.atStartOfDay())
+        )).thenThrow(new RuntimeException("Transaction DB failure"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            rewardsService.calculateRewardPoints(customerId, fromDate, toDate);
+        });
+
+        assertEquals("Transaction DB failure", exception.getMessage());
+    }
+
+    @Test
+    public void testSaveCustomerAndTransaction_CustomerRepositoryThrowsException() {
+        CustomerTransactionDTO dto = new CustomerTransactionDTO();
+        dto.setCustomerId("CUST123");
+        dto.setCustomerName("John Doe");
+        dto.setTransactionId("TXN001");
+        dto.setAmount(150.0);
+        dto.setTransactionDate(LocalDateTime.now());
+
+        when(customerRepository.save(any(Customer.class))).thenThrow(new RuntimeException("Customer DB not reachable"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            rewardsService.saveCustomerAndTransaction(dto);
+        });
+
+        assertEquals("Customer DB not reachable", exception.getMessage());
+    }
+
+    @Test
+    public void testSaveCustomerAndTransaction_TransactionRepositoryThrowsException() {
+        CustomerTransactionDTO dto = new CustomerTransactionDTO();
+        dto.setCustomerId("CUST123");
+        dto.setCustomerName("John Doe");
+        dto.setTransactionId("TXN001");
+        dto.setAmount(150.0);
+        dto.setTransactionDate(LocalDateTime.now());
+
+        Customer customer = new Customer();
+        customer.setCustomerId(dto.getCustomerId());
+        customer.setCustomerName(dto.getCustomerName());
+
+        when(customerRepository.save(any(Customer.class))).thenReturn(customer);
+        when(transactionRepository.save(any(Transaction.class))).thenThrow(new RuntimeException("Transaction DB error"));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            rewardsService.saveCustomerAndTransaction(dto);
+        });
+
+        assertEquals("Transaction DB error", exception.getMessage());
+    }
+}

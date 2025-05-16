@@ -20,8 +20,6 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.any;
 
 public class RewardsControllerTest {
 
@@ -31,7 +29,8 @@ public class RewardsControllerTest {
     @InjectMocks
     private RewardsController rewardsController;
 
-    @BeforeEach
+    @SuppressWarnings("deprecation")
+	@BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         //Necessary for the from() method in the controller.

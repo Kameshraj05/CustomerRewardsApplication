@@ -1,0 +1,30 @@
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      customerService:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        waitDurationInHalfOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+      rewardCalculationService:
+        registerHealthIndicator: true
+        failureRateThreshold: 60
+        waitDurationInHalfOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 5
+        slidingWindowSize: 15
+  retry:
+    instances:
+      customerServiceRetry:
+        maxAttempts: 3
+        waitDuration: 1s
+
+# SpringDoc (Swagger) Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    config:
+      defaultModelsExpandDepth: -1

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,27 +26,31 @@ import com.assignment.rewardsapi.repository.CustomerRepository;
 import com.assignment.rewardsapi.repository.TransactionRepository;
 import com.google.gson.Gson;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 @Service
 public class RewardsService {
-	
-	private static final Logger log = LogManager.getLogger(RewardsService.class);
-	private final Gson gson = new Gson();
 
-	@Autowired
+    private static final Logger log = LogManager.getLogger(RewardsService.class);
+    private final Gson gson = new Gson();
+
+    @Autowired
     private TransactionRepository transactionRepository;
-    
+
     @Autowired
     private CustomerRepository customerRepository;
 
     public RewardsService(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
     }
-    
+
+    @CircuitBreaker(name = "customerService", fallbackMethod = "saveCustomerAndTransactionFallback")
     public void saveCustomerAndTransaction(CustomerTransactionDTO dto) {
+    	log.info("In Service layer : " + dto);
         Customer customer = new Customer();
         customer.setCustomerId(dto.getCustomerId());
         customer.setCustomerName(dto.getCustomerName());
-
+        log.info("Customer before saving : " + customer);
         customerRepository.save(customer);
 
         Transaction transaction = new Transaction();
@@ -53,10 +58,20 @@ public class RewardsService {
         transaction.setTransactionId(dto.getTransactionId());
         transaction.setAmount(dto.getAmount());
         transaction.setTransactionDate(dto.getTransactionDate());
-
+        log.info("Transaction before saving : " + transaction);
         transactionRepository.save(transaction);
+        
+        log.info("Saved complete customer and transaction");
     }
-    
+
+    public void saveCustomerAndTransactionFallback(CustomerTransactionDTO dto, Throwable t) {
+        log.error("Fallback for saveCustomerAndTransaction. CustomerId: {}, TransactionId: {}, Error: {}",
+                dto.getCustomerId(), dto.getTransactionId(), t.getMessage());
+        // You might want to implement alternative logic here, like saving to a temporary store
+        // or sending a notification about the failure. For this example, we'll just log.
+    }
+
+    @CircuitBreaker(name = "rewardCalculationService", fallbackMethod = "calculateRewardPointsFallback")
     public CustomerDetailsDTO calculateRewardPoints(String customerId, LocalDate fromDate, LocalDate toDate) {
         if (!isValidCustomerId(customerId)) {
             log.error("Validation failure with customerId: " + customerId);
@@ -105,6 +120,19 @@ public class RewardsService {
 
         log.info("DTO Returning: " + gson.toJson(dto));
         return dto;
+    }
+
+    public CustomerDetailsDTO calculateRewardPointsFallback(String customerId, LocalDate fromDate, LocalDate toDate, Throwable t) {
+        log.error("Fallback for calculateRewardPoints. CustomerId: {}, FromDate: {}, ToDate: {}, Error: {}",
+                customerId, fromDate, toDate, t.getMessage());
+        // Provide a default or cached response. For example, return an empty CustomerDetailsDTO
+        CustomerDetailsDTO fallbackDTO = new CustomerDetailsDTO();
+        fallbackDTO.setId(customerId);
+        fallbackDTO.setCustomerName("N/A (Fallback)");
+        fallbackDTO.setTransaction(Collections.emptyList());
+        fallbackDTO.setMonthlyPoints(Collections.emptyList());
+        fallbackDTO.setTotalPoints(0);
+        return fallbackDTO;
     }
 
     //Validate customer id
@@ -165,4 +193,3 @@ public class RewardsService {
                 .sum();
     }
 }
-
