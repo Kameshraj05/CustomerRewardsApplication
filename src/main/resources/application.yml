@@ -20,7 +20,7 @@ resilience4j:
         maxAttempts: 3
         waitDuration: 1s
 
-# SpringDoc (Swagger) Configuration
+# Swagger Configuration
 springdoc:
   api-docs:
     path: /api-docs
