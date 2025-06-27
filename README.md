@@ -264,8 +264,8 @@ This API allows for retrieving customer transaction history and calculating rewa
 | 404         | Not Found             | No transactions found for the given inputs.                                                             |
 | 500         | Internal Server Error | Something went wrong. Please try agin later.                                                            |
 ---
-### 👨🏽‍💻 Author
-## Kamesh Raj T
+## 👨🏽‍💻 Author
+### Kamesh Raj T
 Full Stack Java Developer  
 📞 Contact: 📧 [Email](mailto:kamesh111raj@gmail.com) 📲 [LinkedIn](https://www.linkedin.com/in/kamesh-raj-t-developer/)  
 
